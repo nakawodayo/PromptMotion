@@ -15,6 +15,42 @@
 4. `.env`ファイルに OpenAI API キーを設定します。
 5. `src/main.py`を実行して、音声ファイルを生成します。
 
+## 動きの例
+
+`docs/instructions.txt`に以下のように記載すると、ランダムな動きが生成されます：
+
+```
+**Anyone** **randomize**
+**Anyone** **randomize**
+**Anyone** **randomize**
+**Anyone** **randomize**
+**Anyone** **randomize**
+**Anyone** **randomize**
+**Anyone** **randomize**
+**Anyone** **randomize**
+**Anyone** **randomize**
+**Anyone** **randomize**
+```
+
+この指示をもとに、`src/main.py`を実行すると、以下のような出力が得られます：
+
+```
+PS C:\Users\koshi\Work\PromptMotion> python src/main.py
+
+🎤 スピーカーで指示を読み上げます...
+[INFO] タイトルを読み上げます: にくをこねるのじょうえんを始めます
+[INFO] (1/10) Suzu: 左足で地面を蹴る。
+[INFO] (2/10) Yuka: 左足で地面を蹴る。
+[INFO] (3/10) Yuka: 「両手を軽く振る」
+[INFO] (4/10) Gan: 両手を広げて円を描くように回転する。
+[INFO] (5/10) Billy: 「両手を広げて大きく振る」
+[INFO] (6/10) Yuno: 両手を広げて大きく円を描く。
+[INFO] (7/10) Gan: 両手を広げて、ゆっくりと踊りながら360度回転する。
+[INFO] (8/10) Suzu: 背中を丸めて膝を曲げる
+[INFO] (9/10) Yuno: 「両手を広げて円を描く」
+[INFO] (10/10) Gan: 「両手を振りながら右足で一回転する」
+```
+
 ## ファイル構成
 
 - `src/main.py`: プロジェクトのメインスクリプト。指示を読み込み、音声ファイルを生成します。
