@@ -4,17 +4,22 @@
 
 ## ファイル構成
 
-- `main.py`: プロジェクトのメインスクリプト。指示を読み込み、音声ファイルを生成します。
-- `instructions.txt`: ダンサーの名前と指示がリストされたファイル。各指示には実行時間が秒単位で指定されています。
-- `dancers.txt`: ダンサーの名前がリストされたファイル。
-- `title.txt`: タイトル用のテキストファイル。
+- `src/main.py`: プロジェクトのメインスクリプト。指示を読み込み、音声ファイルを生成します。
+- `src/realtime_feedback.py`: リアルタイムフィードバックを提供するスクリプト。
+- `src/test.py`: テスト用スクリプト。
+- `src/video_capture_test.py`: ビデオキャプチャのテストスクリプト。
+- `docs/instructions.txt`: ダンサーの名前と指示がリストされたファイル。各指示には実行時間が秒単位で指定されています。
+- `docs/dancers.txt`: ダンサーの名前がリストされたファイル。
+- `docs/title.txt`: タイトル用のテキストファイル。
+- `config/requirements.txt`: プロジェクトの依存関係をリストしたファイル。
+- `assets/`: プロジェクトで使用するアセットを格納するディレクトリ。
 - `.env`: 環境変数を設定するファイル。OpenAI API キーを設定します。
 
 ## 使用方法
 
 1. `.env`ファイルに OpenAI API キーを設定します。
-2. `instructions.txt`と`dancers.txt`を必要に応じて編集します。
-3. `main.py`を実行します。音声ファイルが`output.mp3`として生成されます。
+2. `docs/instructions.txt`と`docs/dancers.txt`を必要に応じて編集します。
+3. `src/main.py`を実行します。音声ファイルが`output.mp3`として生成されます。
 
 ## 注意事項
 
