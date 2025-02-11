@@ -2,7 +2,7 @@
 venv/
 
 # 一時フォルダ
-temp
+temp/*
 
 # Pythonのキャッシュファイル
 __pycache__/
@@ -11,11 +11,16 @@ __pycache__/
 
 # 出力されたファイル
 output.*
-test.mp3
+*.mp3
 capture_*
 silence_*
 file_list.txt
-temp_audio.mp3
 
 # 環境変数ファイル（APIキーなど）
 .env
+
+# その他の一般的な無視ファイル
+.DS_Store
+Thumbs.db
+*.log
+*.bak

@@ -7,7 +7,7 @@ import shutil
 from dotenv import load_dotenv
 
 # 環境変数をロード
-load_dotenv()
+load_dotenv(dotenv_path='config/.env')
 
 # OpenAI APIキーを取得
 api_key = os.getenv("OPENAI_API_KEY")
@@ -20,9 +20,9 @@ client = openai.OpenAI(api_key=api_key)
 # ファイルパス設定
 output_file = r"C:\Users\koshi\Work\PromptMotion\output.mp3"
 temp_dir = r"C:\Users\koshi\Work\PromptMotion\temp"
-instructions_file = r"C:\Users\koshi\Work\PromptMotion\instructions.txt"
-dancers_file = r"C:\Users\koshi\Work\PromptMotion\dancers.txt"
-title_file = r"C:\Users\koshi\Work\PromptMotion\title.txt"  # ★ ここがタイトル用のファイルです
+instructions_file = r"C:\Users\koshi\Work\PromptMotion\docs\instructions.txt"
+dancers_file = r"C:\Users\koshi\Work\PromptMotion\docs\dancers.txt"
+title_file = r"C:\Users\koshi\Work\PromptMotion\docs\title.txt"  # ★ ここがタイトル用のファイルです
 
 temp_output_file = os.path.join(temp_dir, "temp_output.mp3")
 
