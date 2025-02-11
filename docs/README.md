@@ -4,8 +4,16 @@
 
 ## 実行環境
 
-このプロジェクトは Windows 環境に対応しています。MacOS/Linux は非対応です。
-メインスクリプトを実行するには、Python をインストールし、`config/requirements.txt`に記載の依存関係を pip install する必要があります。
+このプロジェクトは Windows 環境に対応しています。以下の手順でセットアップを行ってください：
+
+1. [Python](https://www.python.org/downloads/) をインストールします。
+2. コマンドプロンプトを開き、プロジェクトのディレクトリに移動します。
+3. `config/requirements.txt`に記載されている依存関係をインストールします：
+   ```
+   pip install -r config/requirements.txt
+   ```
+4. `.env`ファイルに OpenAI API キーを設定します。
+5. `src/main.py`を実行して、音声ファイルを生成します。
 
 ## ファイル構成
 
