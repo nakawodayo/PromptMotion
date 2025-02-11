@@ -9,9 +9,10 @@ __pycache__/
 *.pyc
 *.pyo
 
-# 出力された音声ファイル
-output.mp3
+# 出力されたファイル
+output.*
 test.mp3
+capture_*
 
 # 環境変数ファイル（APIキーなど）
 .env
