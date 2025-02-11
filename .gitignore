@@ -1,0 +1,14 @@
+# 仮想環境のフォルダ
+venv/
+
+# Pythonのキャッシュファイル
+__pycache__/
+*.pyc
+*.pyo
+
+# 出力された音声ファイル
+output.mp3
+test.mp3
+
+# 環境変数ファイル（APIキーなど）
+.env
