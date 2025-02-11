@@ -22,6 +22,8 @@ output_file = r"C:\Users\koshi\Work\PromptMotion\output.mp3"
 temp_dir = r"C:\Users\koshi\Work\PromptMotion\temp"
 instructions_file = r"C:\Users\koshi\Work\PromptMotion\instructions.txt"
 dancers_file = r"C:\Users\koshi\Work\PromptMotion\dancers.txt"
+title_file = r"C:\Users\koshi\Work\PromptMotion\title.txt"  # ★ ここがタイトル用のファイルです
+
 temp_output_file = os.path.join(temp_dir, "temp_output.mp3")
 
 # 一時ファイル保存ディレクトリの作成
@@ -67,6 +69,17 @@ def load_dancers(file_path):
         raise ValueError("ダンサーのリストが空です。")
 
     return dancers
+
+
+def load_title(file_path):
+    """タイトル用のテキストファイルを読み込む"""
+    if not os.path.exists(file_path):
+        print(f"[WARNING] タイトルファイルが見つかりません: {file_path}")
+        return None
+
+    with open(file_path, "r", encoding="utf-8") as file:
+        title_text = file.read().strip()
+        return title_text if title_text else None
 
 
 def generate_random_instruction():
@@ -170,23 +183,38 @@ def rename_output_file(temp_file, final_file):
         print(f"[ERROR] {final_file} へのリネームに失敗しました。他のプロセスが使用中の可能性があります。")
 
 
-def speak_text_with_custom_silence(texts, silence_durations):
+def speak_text_with_custom_silence(title_text, texts, silence_durations):
     """
-    指示ごとに音声ファイルを作り、指定秒数の無音を挟んで concat.txt で一気に結合する。
+    1. タイトルを読み上げ
+    2. 5秒の無音
+    3. 指示ごとに音声ファイルを作り、指定秒数の無音を挟んで concat.txt で一気に結合する。
     最後に temp_output.mp3 を output.mp3 にリネームする。
     """
     temp_files = []
-    total_steps = len(texts)
     concat_file_path = os.path.join(temp_dir, "concat.txt")
 
-    # 無音ファイルのキャッシュ
+    # タイトル読み上げ
+    if title_text:
+        temp_title_file = os.path.join(temp_dir, "title.mp3")
+        cmd_title = (
+            f'edge-tts --text "{title_text}" '
+            f'--voice ja-JP-NanamiNeural --write-media "{temp_title_file}"'
+        )
+        print(f"[INFO] タイトルを読み上げます: {title_text}")
+        run_command_with_retry(cmd_title)
+        temp_files.append(temp_title_file)
+
+        # 5秒の無音
+        silence_5s = create_silent_audio(5)
+        temp_files.append(silence_5s)
+
+    total_steps = len(texts)
     silence_cache = {}
 
-    # 1. 個別の音声ファイルを生成
+    # 各指示を音声化 + 無音
     for i, (text, silence_duration) in enumerate(zip(texts, silence_durations)):
         parts = text.split(" ", 1)
         if len(parts) < 2:
-            # ダンサー名 + 指示文 の形式でなければスキップ
             continue
 
         dancer_name, instruction = parts[0], parts[1]
@@ -219,12 +247,12 @@ def speak_text_with_custom_silence(texts, silence_durations):
             silence_cache[silence_duration] = create_silent_audio(silence_duration)
         temp_files.append(silence_cache[silence_duration])
 
-    # 2. concat.txt を作成
+    # すべてのファイルパスを concat.txt に書き出し
     with open(concat_file_path, "w", encoding="utf-8") as concat_file:
         for tf in temp_files:
             concat_file.write(f"file '{tf}'\n")
 
-    # 3. ffmpeg で結合 (temp_output.mp3)
+    # ffmpeg で結合
     if ensure_output_file_is_writable(output_file):
         merge_command = (
             f'ffmpeg -y -f concat -safe 0 '
@@ -232,19 +260,20 @@ def speak_text_with_custom_silence(texts, silence_durations):
         )
         subprocess.run(merge_command, shell=True)
 
-        # 4. temp_output.mp3 を output.mp3 にリネーム
+        # temp_output.mp3 を output.mp3 にリネーム
         rename_output_file(temp_output_file, output_file)
 
-        # Windowsメディアプレイヤーで再生する場合
+        # Windowsメディアプレイヤーで再生（必要に応じて）
         subprocess.Popen(["start", "", output_file], shell=True)
 
     print("[INFO] すべての音声ファイルを処理完了しました！")
 
 
 if __name__ == "__main__":
-    # 1. 指示ファイル & ダンサーファイルの読み込み
+    # 1. 指示ファイル & ダンサーファイル & タイトルファイルの読み込み
     raw_instructions = load_instructions(instructions_file)
     dancers = load_dancers(dancers_file)
+    title_text = load_title(title_file)
 
     # 2. インストラクションとサイレンス秒数を整形
     final_instructions, silence_durations = process_instructions_with_timing(
@@ -253,4 +282,4 @@ if __name__ == "__main__":
 
     # 3. 実行
     print("\n🎤 スピーカーで指示を読み上げます...")
-    speak_text_with_custom_silence(final_instructions, silence_durations)
+    speak_text_with_custom_silence(title_text, final_instructions, silence_durations)
