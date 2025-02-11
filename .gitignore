@@ -13,6 +13,7 @@ __pycache__/
 output.*
 test.mp3
 capture_*
+silence_*
 
 # 環境変数ファイル（APIキーなど）
 .env

@@ -1,0 +1,155 @@
+Gan ここに立つ, 30s
+Billy ここに立つ, 10s
+Billy 着替える
+Gan 目を細めて中を見る, 2s
+Suzu ここに立つ, 10s
+Suzu Billyを見る, 10s
+Yuka ここに立つ, 10s
+Gan たまに手を振る
+Yuka 外を向く
+Yuno ここに立つ, 10s
+Billy Suzuを見る
+Suzu Yunoを見る
+Gan 窓に触る
+Yuno Ganを見る
+Yuka たまに手を振る
+Yuka 名前を知らない人に呼びかける
+Gan 中の人に呼び掛ける
+Yuno ポーズをとる, 5s
+Yuno 猫です
+Suzu 背後を気にする, 5s
+Suzu 人だと聞きましたが, 5s
+Billy ポーズをとる, 5s
+Billy 人です
+Gan 窓に顔を寄せる
+Gan 猫だと聞きましたが, 5s
+Yuno ポーズをとる, 5s
+Yuno 猫です, 5s
+Suzu 誰かを探すようにキョロキョロする, 5s
+Suzu 人だと聞きましたが, 5s
+Billy ポーズをとる, 5s
+Billy 人です
+Gan 唾をためて飲み込む
+Gan 猫だと聞きましたが, 5s
+Yuno ポーズをとる, 5s
+Yuno 猫です
+Suzu 壁に触る, 5s
+Suzu 人だと聞きましたが, 5s
+Billy ポーズをとる, 5s
+Billy 人です
+Gan ゆっくり顔を変える
+Gan 猫だと聞きましたが, 5s
+Yuka 部屋の方を向く, 1s
+Yuka ゾウよ
+Yuno ゾウ？
+Billy ゾウ？
+Suzu ゾウ？
+Yuka 窓に書いて見せる
+Yuka ゾウよ
+Gan さむがる
+Gan ゾーッ
+Suzu Ganを見る
+Billy Ganを見る
+Yuno Ganを見る
+Gan 部屋に入って窓を閉める
+Gan 誰かとにらめっこする
+Billy にらめっこに加わる
+Suzu　にらめっこに加わる
+Yuka ゾウだったのよ。ゾウだったわ。ゾウは鼻ね。ゾウの、鼻……。
+Yuno Yukaを見る
+Suzu Yukaを見る
+Billy Yukaを見る
+Gan Yukaを見る
+Gan ゾウさん　ゾウさん　お鼻が長いのね　そうよ　母さんも　長いのよ
+Yuka 台詞を繰り返す, 0.5s
+Yuno ポーズをとる, 0.5s
+Yuka 台詞を繰り返す, 0.5s
+Yuno ポーズをとる, 3s
+Yuno ポーズをとる, 1s
+Yuno ゾウの鼻
+Yuno 長い
+Suzu 太い
+Billy 重い
+Gan Suzuに近づく
+Billy Suzuに近づく
+Suzu 走りに行く
+Billy その場で足踏みする
+Gan 今この瞬間に聞こえる一番小さな音を探す
+Yuno 目を閉じて、遠くの音と近くの音を聞き分ける
+Suzu 帰ってくる
+Yuno 話を戻しませんか
+Billy 足踏みをやめる
+Suzu 私は人だと聞きました
+Billy ポーズをとる, 5s
+Billy 人です
+Gan 猫だと聞きましたが
+Yuno ポーズをとる, 5s
+Yuno 猫です。名前はブンザエモンと言いました。ブンザエモンなぞという名前の人間が今時存在すると思いますか？ネコですよ、当然。
+Gan 拍手する
+Billy しかし、ですよ。ネコを××たりしますか？
+Yuno します
+Suzu あんた××たんですか？
+Yuno 私は××てませんよ。だが、聞いたことはある。それに、人間を××たりしたら、これはもう、大変なことだ。
+Gan 犯罪です。××なくたっても、犯罪だ。生きたまま××る、という訳にはいかんでしょう。まず、殺さなくちゃならん。
+Suzu 私は昔、生きたままのエビを××たことがありますよ。それから、生きたままのシラウオも××ました。
+Yuno シラウオは、こんなもんでしょう。エビは、この位だ。しかしヒトは、こんなだ。それを生きたまま××たりしませんよ。
+Billy 赤ん坊だったら、どうです？
+Gan 赤ん坊なら、可能でしょう。
+Suzu しかし、赤ん坊を生きたまま××るというのは、私、趣味じゃないですね。
+Yuno あんたの趣味を聞いてやしません。話題は××られたのは、ヒトかネコか、ということですよ。
+Billy ヒトなのかネコなのか、それが問題だぁ！
+Yuka ゾウだったのよ。ゾウだったわ。ゾウは鼻ね。ゾウの、鼻……。私、ゾウの鼻を, 0.2s
+Gan 言わせない, 0.2s
+Suzu 言わせない, 0.2s
+Billy 言わせない, 0.2s
+Yuno 言わせない, 0.2s
+Yuka たことがあるわ。, 0.2s
+Yuka ゾウの鼻は、, 0.2s
+Yuka ゾウの鼻は、, 0.2s
+Yuka かったわ。その、, 0.2s
+Yuka は、そうね、夢に似ていた。はつきりと覚えている夢よ。私、時々、夢を見るわ。ゾウの鼻を、, 0.2s
+Yuka ている夢よ。目覚めるとよみがえってくるわ……。私、ゾウの鼻を, 0.2s
+Yuka たくて、, 0.2s
+Yuka たくて、, 0.2s
+Yuka たくて、探したわ。でも、どこにもない。私、今でも、, 0.2s
+Yuka たいわ。ゾウの鼻……、ゾウの鼻…。, 5s
+Yuka ものすごくゆっくり外を向く
+Gan 窓の外を見る
+Suzu 窓の外を見る
+Billy 窓の外を見る
+Yuno 窓の外を見る
+Suzu Yunoを見る
+Suzu すいませんが、私、口をふさいでますから、あんた、車椅子を押してくれませんか。このまま放っておくと、保健所がくる。
+Yuno Suzuを見る
+Yuno いいですよ
+Suzu 方法は、あるんです。ゾウの鼻を××させるんです。
+Yuno ゾウの鼻を××させる？
+Suzu 勿論、生きちゃいません。匂いも××もない。ニセモノです。私は、五年越し、彼女にゾウの鼻を××させてきました。ホラホラ、ゾウの鼻だよ。……るんだよ、とね。,1s
+Billy Happy Birthdayを流す
+**Anyone** **randomize**,1s
+**Anyone** **randomize**,1s
+**Anyone** **randomize**,1s
+**Anyone** **randomize**,1s
+**Anyone** **randomize**,1s
+**Anyone** **randomize**,1s
+**Anyone** **randomize**,1s
+**Anyone** **randomize**,1s
+**Anyone** **randomize**,1s
+**Anyone** **randomize**,1s
+**Anyone** **randomize**,1s
+Suzu 泣く, 5s
+**Anyone** **randomize**,1s
+**Anyone** **randomize**,1s
+**Anyone** **randomize**,1s
+**Anyone** **randomize**,1s
+**Anyone** **randomize**,1s
+**Anyone** **randomize**,1s
+**Anyone** **randomize**,1s
+**Anyone** **randomize**,1s
+**Anyone** **randomize**,1s
+**Anyone** **randomize**,1s
+**Anyone** **randomize**,1s
+Yuka 泣く, 10s
+みんな 並ぶ
+みんな 礼をする
+みんな 帰る

@@ -2,7 +2,7 @@ import openai
 import subprocess
 import os
 import random
-import re
+import time
 from dotenv import load_dotenv
 
 # 環境変数をロード
@@ -18,11 +18,13 @@ client = openai.OpenAI(api_key=api_key)
 
 # ファイルパス設定
 output_file = "C:\\Users\\koshi\\Work\\PromptMotion\\output.mp3"
+temp_dir = "C:\\Users\\koshi\\Work\\PromptMotion\\temp"
 instructions_file = "C:\\Users\\koshi\\Work\\PromptMotion\\instructions.txt"
 dancers_file = "C:\\Users\\koshi\\Work\\PromptMotion\\dancers.txt"
 
-# 無音を表現するタグ（`edge-tts` ではサポートされないので、後で `ffmpeg` で追加）
-PAUSE_TAG = "[PAUSE]"
+# 一時ファイル保存ディレクトリの作成
+if not os.path.exists(temp_dir):
+    os.makedirs(temp_dir)
 
 def load_instructions(file_path):
     """ 指示リストをファイルから読み込む """
@@ -64,9 +66,9 @@ def generate_random_instruction():
     return response.choices[0].message.content.strip()
 
 def process_instructions_with_timing(instructions, dancers):
-    """ 指示の間隔を処理し、全体のTTS用テキストを作成 """
-    processed_text = []
-    pause_durations = []  # 各[PAUSE]の長さを保存
+    """ 指示の間隔を指定された秒数で調整し、指定がない場合はランダムに設定 """
+    processed_instructions = []
+    silence_durations = []
 
     for instruction in instructions:
         parts = instruction.split(",")  # カンマで分割
@@ -82,64 +84,133 @@ def process_instructions_with_timing(instructions, dancers):
         if "**randomize**" in action_part:
             dancer = action_part.split(" ")[0]  # ダンサー名を取得
             random_instruction = generate_random_instruction()
-            processed_text.append(f"{dancer} {random_instruction}")
+            processed_instructions.append(f"{dancer} {random_instruction}")
         else:
-            processed_text.append(action_part)
+            processed_instructions.append(action_part)
 
-        # 無音の挿入
-        pause_time = int(time_part[:-1]) if time_part and time_part.endswith("s") and time_part[:-1].isdigit() else random.randint(2, 10)
-        processed_text.append(PAUSE_TAG)
-        pause_durations.append(pause_time)
+        # 指定された秒数の無音 or ランダム
+        silence_durations.append(int(time_part[:-1]) if time_part and time_part.endswith("s") and time_part[:-1].isdigit() else random.randint(2, 10))
 
-    return processed_text, pause_durations
+    return processed_instructions, silence_durations
 
-def generate_tts_audio(texts):
-    """ 全体のTTS音声を一発で生成 """
-    combined_text = " ".join(texts).replace(PAUSE_TAG, "")
-    temp_audio = "C:\\Users\\koshi\\Work\\PromptMotion\\temp_audio.mp3"
-    
-    command_tts = f'edge-tts --text "{combined_text}" --voice ja-JP-NanamiNeural --rate=+5% --volume=+0% --write-media "{temp_audio}"'
-    subprocess.run(command_tts, shell=True)
+def create_silent_audio(duration):
+    """ 指定した秒数の無音mp3を作成（既存の無音ファイルを再利用） """
+    silence_file = f"{temp_dir}\\silence_{duration}.mp3"
 
-    return temp_audio
+    # 既にファイルが存在する場合は再作成しない
+    if os.path.exists(silence_file):
+        print(f"[INFO] 既存の無音ファイルを再利用: {silence_file}")
+        return silence_file
 
-def insert_silence(input_audio, pause_durations):
-    """ TTS音声に無音を挿入 """
-    temp_silence = "C:\\Users\\koshi\\Work\\PromptMotion\\temp_silence.mp3"
-    output_audio = "C:\\Users\\koshi\\Work\\PromptMotion\\output.mp3"
+    print(f"[INFO] 無音ファイルを作成中: {silence_file} ({duration}s)")
+    command = f'ffmpeg -y -f lavfi -i anullsrc=r=24000:cl=mono -t {duration} -q:a 9 -acodec libmp3lame "{silence_file}"'
+    subprocess.run(command, shell=True)
 
-    # 無音ファイル作成
-    silence_clips = []
-    for i, duration in enumerate(pause_durations):
-        silence_file = f"C:\\Users\\koshi\\Work\\PromptMotion\\silence_{i}.mp3"
-        command_silence = f'ffmpeg -y -f lavfi -i anullsrc=r=24000:cl=mono -t {duration} -q:a 9 -acodec libmp3lame "{silence_file}"'
-        subprocess.run(command_silence, shell=True)
-        silence_clips.append(silence_file)
+    return silence_file
 
-    # すべての無音ファイルを連結
-    concat_list = "|".join(silence_clips)
-    command_concat = f'ffmpeg -y -i "concat:{concat_list}" -acodec copy "{temp_silence}"'
-    subprocess.run(command_concat, shell=True)
+def run_command_with_retry(command, max_retries=3, delay=5):
+    """ コマンドを最大 max_retries 回リトライする """
+    for attempt in range(max_retries):
+        try:
+            subprocess.run(command, shell=True, check=True)
+            return True
+        except subprocess.CalledProcessError as e:
+            print(f"[ERROR] コマンド失敗 ({attempt+1}/{max_retries}): {e}")
+            time.sleep(delay)
+    return False
 
-    # TTS音声と無音を合成
-    command_merge = f'ffmpeg -y -i "{input_audio}" -i "{temp_silence}" -filter_complex "[0:a][1:a]concat=n=2:v=0:a=1[out]" -map "[out]" "{output_audio}"'
-    subprocess.run(command_merge, shell=True)
+def speak_text_with_custom_silence(texts, silence_durations):
+    """ 指示ごとに指定された秒数またはランダムな無音を挿入しながら mp3 を作成（進捗表示あり） """
+    temp_files = []
+    total_steps = len(texts)
 
-    return output_audio
+    for i, (text, silence_duration) in enumerate(zip(texts, silence_durations)):
+        parts = text.split(" ", 1)
+        if len(parts) < 2:
+            continue
+
+        dancer_name = parts[0]
+        instruction = parts[1]
+
+        temp_dancer_file = f"{temp_dir}\\dancer_{i}.mp3"
+        temp_instruction_file = f"{temp_dir}\\instruction_{i}.mp3"
+
+        temp_files.append(temp_dancer_file)
+        temp_files.append(temp_instruction_file)
+
+        # 進捗表示
+        print(f"[INFO] ({i+1}/{total_steps}) {dancer_name}: {instruction}")
+
+        # ダンサー名の音声生成
+        command_dancer = f'edge-tts --text "{dancer_name}" --voice ja-JP-NanamiNeural --rate=+5% --volume=+0% --write-media "{temp_dancer_file}"'
+        if not run_command_with_retry(command_dancer):
+            print(f"[ERROR] {dancer_name} の音声生成に失敗しました")
+            continue  
+
+        # 指示文の音声生成
+        command_instruction = f'edge-tts --text "{instruction}" --voice ja-JP-NanamiNeural --rate=+5% --volume=+0% --write-media "{temp_instruction_file}"'
+        if not run_command_with_retry(command_instruction):
+            print(f"[ERROR] {instruction} の音声生成に失敗しました")
+            continue  
+
+        # 無音ファイルの取得（既存のものがあれば再利用）
+        silence_file = create_silent_audio(silence_duration)
+        temp_files.append(silence_file)
+
+    # すべての音声ファイルを結合
+    concat_list = "|".join(temp_files)
+    merge_command = f'ffmpeg -y -i "concat:{concat_list}" -acodec copy "{output_file}"'
+    subprocess.run(merge_command, shell=True)
+
+    # Windowsのメディアプレイヤーで再生
+    subprocess.Popen(["start", "", output_file], shell=True)
+
+    print("[INFO] すべての音声ファイルを処理完了しました！")
+
+    """ 指示ごとに指定された秒数またはランダムな無音を挿入しながら mp3 を作成 """
+    temp_files = []
+
+    for i, (text, silence_duration) in enumerate(zip(texts, silence_durations)):
+        parts = text.split(" ", 1)
+        if len(parts) < 2:
+            continue
+
+        dancer_name = parts[0]
+        instruction = parts[1]
+
+        temp_dancer_file = f"{temp_dir}\\dancer_{i}.mp3"
+        temp_instruction_file = f"{temp_dir}\\instruction_{i}.mp3"
+
+        temp_files.append(temp_dancer_file)
+        temp_files.append(temp_instruction_file)
+
+        # ダンサー名の音声生成
+        command_dancer = f'edge-tts --text "{dancer_name}" --voice ja-JP-NanamiNeural --rate=+5% --volume=+0% --write-media "{temp_dancer_file}"'
+        if not run_command_with_retry(command_dancer):
+            print(f"[ERROR] {dancer_name} の音声生成に失敗しました")
+            continue  
+
+        # 指示文の音声生成
+        command_instruction = f'edge-tts --text "{instruction}" --voice ja-JP-NanamiNeural --rate=+5% --volume=+0% --write-media "{temp_instruction_file}"'
+        if not run_command_with_retry(command_instruction):
+            print(f"[ERROR] {instruction} の音声生成に失敗しました")
+            continue  
+
+        # 無音ファイルの取得（既存のものがあれば再利用）
+        silence_file = create_silent_audio(silence_duration)
+        temp_files.append(silence_file)
+
+    # すべての音声ファイルを結合
+    concat_list = "|".join(temp_files)
+    merge_command = f'ffmpeg -y -i "concat:{concat_list}" -acodec copy "{output_file}"'
+    subprocess.run(merge_command, shell=True)
+
+    # Windowsのメディアプレイヤーで再生
+    subprocess.Popen(["start", "", output_file], shell=True)
 
 if __name__ == "__main__":
-    # 1. 指示リストとダンサーリストを読み込む
     raw_instructions = load_instructions(instructions_file)
     dancers = load_dancers(dancers_file)
-
-    # 2. `randomize` と `Anyone` を処理
-    final_text, pause_durations = process_instructions_with_timing(raw_instructions, dancers)
-
-    # 3. TTS音声を一発で生成
-    tts_audio = generate_tts_audio(final_text)
-
-    # 4. 無音を適切に挿入
-    output_audio = insert_silence(tts_audio, pause_durations)
-
-    # 5. 再生
-    subprocess.Popen(["start", "", output_audio], shell=True)
+    final_instructions, silence_durations = process_instructions_with_timing(raw_instructions, dancers)
+    print("\n🎤 スピーカーで指示を読み上げます...")
+    speak_text_with_custom_silence(final_instructions, silence_durations)
