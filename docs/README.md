@@ -32,7 +32,7 @@
 **Anyone** **randomize**
 ```
 
-この指示をもとに、`src/main.py`を実行すると、以下のような出力が得られます：
+この指示をもとに、`src/main.py`を実行すると、以下のような出力が得られ、最終的に`output.mp3`に音声ファイルが生成されます：
 
 ```
 PS C:\Users\koshi\Work\PromptMotion> python src/main.py
