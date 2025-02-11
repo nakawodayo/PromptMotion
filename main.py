@@ -37,6 +37,16 @@ def load_dancers():
 
     return dancers
 
+def load_instructions(file_path):
+    """ 指示リストをファイルから読み込む """
+    if not os.path.exists(file_path):
+        raise FileNotFoundError(f"指示の設定ファイルが見つかりません: {file_path}")
+
+    with open(file_path, "r", encoding="utf-8") as file:
+        instructions = [line.strip() for line in file.readlines() if line.strip()]
+
+    return instructions
+
 def generate_instructions():
     """ 1回のAPIリクエストで10個のダンスの指示を生成 """
     prompt = """
@@ -63,6 +73,36 @@ def generate_instructions():
         raise ValueError("OpenAI APIのレスポンスが不完全です。")
 
     return instructions
+
+def generate_random_instruction():
+    """ AIにランダムなダンスの指示を生成させる """
+    prompt = """あなたはダンスの指導者です。
+    1つのランダムなダンスの指示を生成してください。
+    - 具体的で明確なアクション
+    - 例: 「右手を上げる」「左足を一歩前に出す」
+    1つだけ出力してください。
+    """
+
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[{"role": "system", "content": prompt}]
+    )
+
+    return response.choices[0].message.content.strip()
+
+def process_instructions(instructions):
+    """ `**randomize**` を AI で置き換える """
+    processed_instructions = []
+    
+    for instruction in instructions:
+        if "**randomize**" in instruction:
+            dancer = instruction.split(" ")[0]  # ダンサー名を取得
+            random_instruction = generate_random_instruction()
+            processed_instructions.append(f"{dancer} {random_instruction}")
+        else:
+            processed_instructions.append(instruction)
+
+    return processed_instructions
 
 def assign_instructions_to_dancers(instructions, dancers):
     """ ダンサーごとにランダムな動作を割り当て、数字を削除する """
@@ -135,15 +175,13 @@ def speak_text_with_silence(texts):
     subprocess.Popen(["start", "", output_file], shell=True)
 
 if __name__ == "__main__":
-    # 1. ダンサー一覧を読み込む
-    dancers = load_dancers()
+    # 1. 指示リストを読み込む
+    instructions_file = "C:\\Users\\koshi\\Work\\PromptMotion\\instructions.txt"
+    raw_instructions = load_instructions(instructions_file)
 
-    # 2. AIがダンスの指示を10個生成
-    instructions = generate_instructions()
+    # 2. `randomize` の指示をAIで補完
+    final_instructions = process_instructions(raw_instructions)
 
-    # 3. ダンサーにランダムに割り当て
-    assigned_instructions = assign_instructions_to_dancers(instructions, dancers)
-
-    # 4. 音声を生成し、スピーカーで指示を読み上げる
+    # 3. 音声を生成し、スピーカーで指示を読み上げる
     print("\n🎤 スピーカーで指示を読み上げます...")
-    speak_text_with_silence(assigned_instructions)
+    speak_text_with_silence(final_instructions)

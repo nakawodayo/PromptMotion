@@ -1,0 +1,6 @@
+Gan ここに立つ
+Billy ここに立つ
+Billy 着替える
+Suzu ここに立つ
+Gan **randomize**
+Suzu Billyを見る
