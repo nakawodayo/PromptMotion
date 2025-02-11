@@ -3,6 +3,7 @@ import subprocess
 import os
 import random
 import time
+import shutil
 from dotenv import load_dotenv
 
 # 環境変数をロード
@@ -21,10 +22,22 @@ output_file = "C:\\Users\\koshi\\Work\\PromptMotion\\output.mp3"
 temp_dir = "C:\\Users\\koshi\\Work\\PromptMotion\\temp"
 instructions_file = "C:\\Users\\koshi\\Work\\PromptMotion\\instructions.txt"
 dancers_file = "C:\\Users\\koshi\\Work\\PromptMotion\\dancers.txt"
+temp_output_file = os.path.join(temp_dir, "temp_output.mp3")
 
 # 一時ファイル保存ディレクトリの作成
 if not os.path.exists(temp_dir):
     os.makedirs(temp_dir)
+
+def ensure_output_file_is_writable(file_path):
+    """ `output.mp3` を削除してから処理を開始し、書き込みエラーを防ぐ """
+    if os.path.exists(file_path):
+        try:
+            os.remove(file_path)
+            print(f"[INFO] 既存の {file_path} を削除しました。")
+        except PermissionError:
+            print(f"[ERROR] {file_path} の削除に失敗しました。他のプロセスが使用中の可能性があります。")
+            return False
+    return True
 
 def load_instructions(file_path):
     """ 指示リストをファイルから読み込む """
@@ -97,16 +110,15 @@ def create_silent_audio(duration):
     """ 指定した秒数の無音mp3を作成（既存の無音ファイルを再利用） """
     silence_file = f"{temp_dir}\\silence_{duration}.mp3"
 
-    # 既にファイルが存在する場合は再作成しない
     if os.path.exists(silence_file):
-        print(f"[INFO] 既存の無音ファイルを再利用: {silence_file}")
-        return silence_file
+        return silence_file  # すでに存在する場合はログを出さずに再利用
 
     print(f"[INFO] 無音ファイルを作成中: {silence_file} ({duration}s)")
     command = f'ffmpeg -y -f lavfi -i anullsrc=r=24000:cl=mono -t {duration} -q:a 9 -acodec libmp3lame "{silence_file}"'
     subprocess.run(command, shell=True)
 
     return silence_file
+
 
 def run_command_with_retry(command, max_retries=3, delay=5):
     """ コマンドを最大 max_retries 回リトライする """
@@ -119,7 +131,64 @@ def run_command_with_retry(command, max_retries=3, delay=5):
             time.sleep(delay)
     return False
 
+def rename_output_file(temp_file, final_file):
+    """ `ffmpeg` で作成した一時ファイルを `output.mp3` にリネーム """
+    try:
+        if os.path.exists(final_file):
+            os.remove(final_file)  # 既存のファイルを削除
+        shutil.move(temp_file, final_file)
+        print(f"[INFO] {temp_file} を {final_file} にリネームしました。")
+    except PermissionError:
+        print(f"[ERROR] {final_file} へのリネームに失敗しました。他のプロセスが使用中の可能性があります。")
+
 def speak_text_with_custom_silence(texts, silence_durations):
+    """ 指示ごとに指定された秒数またはランダムな無音を挿入しながら mp3 を作成 """
+    temp_files = []
+    total_steps = len(texts)
+    concat_file_path = os.path.join(temp_dir, "concat.txt")
+
+    # 無音ファイルのキャッシュ
+    silence_cache = {}
+
+    for i, (text, silence_duration) in enumerate(zip(texts, silence_durations)):
+        parts = text.split(" ", 1)
+        if len(parts) < 2:
+            continue
+
+        dancer_name = parts[0]
+        instruction = parts[1]
+
+        temp_dancer_file = os.path.join(temp_dir, f"dancer_{i}.mp3")
+        temp_instruction_file = os.path.join(temp_dir, f"instruction_{i}.mp3")
+
+        temp_files.append(temp_dancer_file)
+        temp_files.append(temp_instruction_file)
+
+        print(f"[INFO] ({i+1}/{total_steps}) {dancer_name}: {instruction}")
+
+        run_command_with_retry(f'edge-tts --text "{dancer_name}" --voice ja-JP-NanamiNeural --write-media "{temp_dancer_file}"')
+        run_command_with_retry(f'edge-tts --text "{instruction}" --voice ja-JP-NanamiNeural --write-media "{temp_instruction_file}"')
+
+        # 無音ファイルをキャッシュして再利用
+        if silence_duration not in silence_cache:
+            silence_cache[silence_duration] = create_silent_audio(silence_duration)
+        
+        temp_files.append(silence_cache[silence_duration])
+
+    # `concat.txt` を作成し、ファイルリストを保存
+    with open(concat_file_path, "w", encoding="utf-8") as concat_file:
+        for temp_file in temp_files:
+            concat_file.write(f"file '{temp_file}'\n")
+
+    # `ffmpeg` でファイルを結合 (concat.txt を使用)
+    if ensure_output_file_is_writable(output_file):
+        merge_command = f'ffmpeg -y -f concat -safe 0 -i "{concat_file_path}" -acodec copy "{temp_output_file}"'
+        subprocess.run(merge_command, shell=True)
+        rename_output_file(temp_output_file, output_file)
+        subprocess.Popen(["start", "", output_file], shell=True)
+
+    print("[INFO] すべての音声ファイルを処理完了しました！")
+
     """ 指示ごとに指定された秒数またはランダムな無音を挿入しながら mp3 を作成（進捗表示あり） """
     temp_files = []
     total_steps = len(texts)
