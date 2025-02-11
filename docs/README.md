@@ -5,9 +5,6 @@
 ## ファイル構成
 
 - `src/main.py`: プロジェクトのメインスクリプト。指示を読み込み、音声ファイルを生成します。
-- `src/realtime_feedback.py`: リアルタイムフィードバックを提供するスクリプト。
-- `src/test.py`: テスト用スクリプト。
-- `src/video_capture_test.py`: ビデオキャプチャのテストスクリプト。
 - `docs/instructions.txt`: ダンサーの名前と指示がリストされたファイル。各指示には実行時間が秒単位で指定されています。
 - `docs/dancers.txt`: ダンサーの名前がリストされたファイル。
 - `docs/title.txt`: タイトル用のテキストファイル。
