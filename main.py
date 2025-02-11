@@ -86,23 +86,42 @@ def create_silent_audio(duration, output_file):
     subprocess.run(command, shell=True)
 
 def speak_text_with_silence(texts):
-    """ 指示ごとに無音を挿入しながら mp3 を作成 """
+    """ 指示ごとにダンサー名の後に1.5秒の無音を挿入し、指示間の無音を2〜10秒ランダムに挿入しながら mp3 を作成 """
     temp_files = []
-    
+
     for i, text in enumerate(texts):
-        temp_text_file = f"{temp_dir}\\temp_{i}.mp3"
+        parts = text.split(" ", 1)  # 最初のスペースで分割
+        if len(parts) < 2:
+            continue  # 念のため、指示が分割できない場合はスキップ
+
+        dancer_name = parts[0]
+        instruction = parts[1]
+
+        temp_dancer_file = f"{temp_dir}\\dancer_{i}.mp3"
         temp_silence_file = f"{temp_dir}\\silence_{i}.mp3"
-        temp_files.append(temp_text_file)
+        temp_instruction_file = f"{temp_dir}\\instruction_{i}.mp3"
+        temp_pause_file = f"{temp_dir}\\pause_{i}.mp3"  # 指示間のランダムな無音
+
+        temp_files.append(temp_dancer_file)
         temp_files.append(temp_silence_file)
+        temp_files.append(temp_instruction_file)
+        temp_files.append(temp_pause_file)
 
-        # Edge TTS で音声合成
-        command = f'edge-tts --text "{text}" --voice ja-JP-NanamiNeural --rate=+5% --volume=+0% --write-media "{temp_text_file}"'
-        subprocess.run(command, shell=True)
+        # ダンサー名の音声生成
+        command_dancer = f'edge-tts --text "{dancer_name}" --voice ja-JP-NanamiNeural --rate=+5% --volume=+0% --write-media "{temp_dancer_file}"'
+        subprocess.run(command_dancer, shell=True)
 
-        # 2秒~10秒の無音を生成
+        # 1.5秒の無音を生成（ダンサー名と指示の間）
+        create_silent_audio(1.5, temp_silence_file)
+
+        # 指示文の音声生成
+        command_instruction = f'edge-tts --text "{instruction}" --voice ja-JP-NanamiNeural --rate=+5% --volume=+0% --write-media "{temp_instruction_file}"'
+        subprocess.run(command_instruction, shell=True)
+
+        # 2〜10秒のランダムな無音を生成（指示と指示の間）
         silence_duration = random.randint(2, 10)
-        create_silent_audio(silence_duration, temp_silence_file)
-    
+        create_silent_audio(silence_duration, temp_pause_file)
+
     # すべての音声ファイルを結合
     concat_list = "|".join(temp_files)
     merge_command = f'ffmpeg -y -i "concat:{concat_list}" -acodec copy "{output_file}"'
