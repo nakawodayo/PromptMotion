@@ -14,6 +14,8 @@ output.*
 test.mp3
 capture_*
 silence_*
+file_list.txt
+temp_audio.mp3
 
 # 環境変数ファイル（APIキーなど）
 .env
